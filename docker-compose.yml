@@ -17,7 +17,6 @@ services:
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     volumes:
       - wordpress_data:/var/www/html
-      - ./wp-content:/var/www/html/wp-content
       - ./debug-config.php:/var/www/html/debug-config.php
     depends_on:
       mysql:

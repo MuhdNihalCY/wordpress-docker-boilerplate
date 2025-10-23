@@ -52,7 +52,7 @@ PHPMYADMIN_PORT=8081
 
 ## Debug Logging
 
-The boilerplate includes a custom `write_log()` function:
+The boilerplate includes a custom `write_log()` function built into debug-config.php:
 
 ```php
 // In your PHP code
@@ -60,7 +60,7 @@ write_log('Debug message', 'info');
 write_log($variable, 'debug');
 ```
 
-Logs are stored in `wp-content/debug-logs/` and viewable in WordPress admin.
+Logs are stored in `wp-content/debug-logs/` (created automatically).
 
 ## Production Deployment
 
@@ -107,7 +107,7 @@ docker-compose logs           # View logs
 
 - ✅ WordPress 6.4 + PHP 8.2 + MySQL 8.0
 - ✅ Complete site isolation for multiple sites
-- ✅ Advanced debug logging with custom functions
+- ✅ Built-in debug logging with write_log() function
 - ✅ Production-ready configuration
 - ✅ Simple management scripts
 - ✅ Health checks and auto-restart
