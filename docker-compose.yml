@@ -1,38 +1,10 @@
-# WordPress Docker Boilerplate
-# =============================
-# A complete, production-ready WordPress development environment with MySQL and phpMyAdmin
-# 
-# Features:
-# - WordPress 6.4 with PHP 8.2 and Apache
-# - MySQL 8.0 with optimized configuration
-# - phpMyAdmin 5.2 for database management
-# - Health checks and automatic restarts
-# - Volume persistence for data safety
-# - Multi-site support with complete isolation
-# - Advanced debug logging capabilities
-#
-# Quick Start:
-#   1. Copy environment.env to .env and customize
-#   2. Run: docker-compose up -d
-#   3. Access WordPress at http://localhost:8080
-#
-# Multi-Site Management:
-#   ./manage-multiple-sites.sh create newsite
-#   ./manage-multiple-sites.sh start newsite
-#
-# Production Deployment:
-#   See README.md for comprehensive production setup guide
-#
-# Security:
-#   - Change default passwords in .env
-#   - Use strong, unique passwords
-#   - Enable SSL/HTTPS for production
-#   - Regular backups and updates
+# WordPress Docker Setup
+# Simple WordPress + MySQL + phpMyAdmin
 
 services:
   wordpress:
     image: wordpress:6.4-php8.2-apache
-    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-wordpress
+    container_name: ${COMPOSE_PROJECT_NAME:-wp}-wordpress
     restart: unless-stopped
     ports:
       - "${WORDPRESS_PORT:-8080}:80"
@@ -43,11 +15,6 @@ services:
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
-      WORDPRESS_CONFIG_EXTRA: |
-        define('WP_MEMORY_LIMIT', '256M');
-        define('WP_MAX_MEMORY_LIMIT', '512M');
-        define('AUTOMATIC_UPDATER_DISABLED', true);
-        define('WP_AUTO_UPDATE_CORE', false);
     volumes:
       - wordpress_data:/var/www/html
       - ./wp-content:/var/www/html/wp-content
@@ -55,30 +22,18 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    networks:
-      - wordpress-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   mysql:
     image: mysql:8.0
-    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-wp}-mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLATION: utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
-    networks:
-      - wordpress-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 30s
@@ -88,7 +43,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
-    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-phpmyadmin
+    container_name: ${COMPOSE_PROJECT_NAME:-wp}-phpmyadmin
     restart: unless-stopped
     ports:
       - "${PHPMYADMIN_PORT:-8081}:80"
@@ -96,25 +51,12 @@ services:
       PMA_HOST: mysql
       PMA_USER: ${MYSQL_USER}
       PMA_PASSWORD: ${MYSQL_PASSWORD}
-      PMA_ARBITRARY: 1
-      UPLOAD_LIMIT: 64M
     depends_on:
       mysql:
         condition: service_healthy
-    networks:
-      - wordpress-network
 
 volumes:
   wordpress_data:
-    driver: local
-    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_wordpress_data
+    name: ${COMPOSE_PROJECT_NAME:-wp}_wordpress_data
   mysql_data:
-    driver: local
-    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_mysql_data
-
-networks:
-  wordpress-network:
-    driver: bridge
-    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_wordpress-network
-
-
+    name: ${COMPOSE_PROJECT_NAME:-wp}_mysql_data
