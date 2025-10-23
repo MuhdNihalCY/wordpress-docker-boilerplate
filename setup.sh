@@ -27,7 +27,13 @@ fi
 
 # Check port availability and find alternative if needed
 check_port() {
+    # Check if port is available for binding
     ! lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null 2>&1
+}
+
+# Check if Docker port is already bound
+check_docker_port() {
+    ! docker ps --format "table {{.Ports}}" | grep -q ":$1->" 2>/dev/null
 }
 
 # Find available ports
@@ -35,14 +41,14 @@ find_available_ports() {
     local wp_port=8080
     local phpmyadmin_port=8081
     
-    # Find available WordPress port
-    while ! check_port $wp_port; do
+    # Find available WordPress port (check both system and Docker)
+    while ! check_port $wp_port || ! check_docker_port $wp_port; do
         ((wp_port++))
     done
     
     # Find available phpMyAdmin port (should be different from WordPress port)
     phpmyadmin_port=$((wp_port + 1))
-    while ! check_port $phpmyadmin_port; do
+    while ! check_port $phpmyadmin_port || ! check_docker_port $phpmyadmin_port; do
         ((phpmyadmin_port++))
     done
     
@@ -55,8 +61,8 @@ if [ -f .env ]; then
     phpmyadmin_port=$(grep PHPMYADMIN_PORT .env | cut -d'=' -f2 2>/dev/null || echo "8081")
     
     # Check if ports are available, if not find alternatives
-    if ! check_port $wp_port || ! check_port $phpmyadmin_port; then
-        log "Ports in .env are not available, finding alternatives..."
+    if ! check_port $wp_port || ! check_port $phpmyadmin_port || ! check_docker_port $wp_port || ! check_docker_port $phpmyadmin_port; then
+        log "Ports in .env are not available (system or Docker conflict), finding alternatives..."
         read wp_port phpmyadmin_port <<< $(find_available_ports)
         
         # Update .env with new ports
@@ -83,6 +89,22 @@ if [ ! -f .env ]; then
     
     log "Created .env with ports: WordPress=$wp_port, phpMyAdmin=$phpmyadmin_port"
 fi
+
+# Stop any existing containers that might conflict
+log "Checking for existing containers..."
+if docker-compose ps -q | grep -q .; then
+    log "Stopping existing containers..."
+    docker-compose down 2>/dev/null || true
+fi
+
+# Clean up any containers using the ports we want
+log "Cleaning up conflicting containers..."
+docker ps -q --filter "publish=$wp_port" | xargs -r docker stop 2>/dev/null || true
+docker ps -q --filter "publish=$phpmyadmin_port" | xargs -r docker stop 2>/dev/null || true
+
+# Export port variables for Docker Compose
+export WORDPRESS_PORT=$wp_port
+export PHPMYADMIN_PORT=$phpmyadmin_port
 
 # Start services
 log "Starting WordPress services..."
