@@ -99,8 +99,12 @@ fi
 
 # Clean up any containers using the ports we want
 log "Cleaning up conflicting containers..."
-docker ps -q --filter "publish=$wp_port" | xargs -r docker stop 2>/dev/null || true
-docker ps -q --filter "publish=$phpmyadmin_port" | xargs -r docker stop 2>/dev/null || true
+if [ -n "$wp_port" ] && [ "$wp_port" != "" ]; then
+    docker ps -q --filter "publish=$wp_port" | xargs -r docker stop 2>/dev/null || true
+fi
+if [ -n "$phpmyadmin_port" ] && [ "$phpmyadmin_port" != "" ]; then
+    docker ps -q --filter "publish=$phpmyadmin_port" | xargs -r docker stop 2>/dev/null || true
+fi
 
 # Export port variables for Docker Compose
 export WORDPRESS_PORT=$wp_port
