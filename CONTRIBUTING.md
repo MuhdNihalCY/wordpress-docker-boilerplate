@@ -12,7 +12,7 @@ Thank you for your interest in contributing to the WordPress Docker Boilerplate!
 
 ### Development Setup
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/wordpress-docker-boilerplate.git`
+2. Clone your fork: `git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git`
 3. Navigate to the project: `cd wordpress-docker-boilerplate`
 4. Run the setup script: `./setup.sh`
 5. Start developing!
