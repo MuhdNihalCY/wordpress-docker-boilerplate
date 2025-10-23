@@ -133,6 +133,14 @@ start_site() {
     print_header "Starting Site: $site_name"
     
     cd "$site_name"
+    
+    # Set COMPOSE_PROJECT_NAME environment variable
+    export COMPOSE_PROJECT_NAME="$site_name"
+    
+    # Stop any existing containers with the same name first
+    docker-compose -p "$site_name" down 2>/dev/null || true
+    
+    # Start the services
     docker-compose -p "$site_name" up -d --build
     
     if [ $? -eq 0 ]; then
@@ -163,6 +171,10 @@ stop_site() {
     print_header "Stopping Site: $site_name"
     
     cd "$site_name"
+    
+    # Set COMPOSE_PROJECT_NAME environment variable
+    export COMPOSE_PROJECT_NAME="$site_name"
+    
     docker-compose -p "$site_name" down
     
     if [ $? -eq 0 ]; then
@@ -242,6 +254,7 @@ cleanup_sites() {
                 
                 # Stop containers first
                 cd "$dir"
+                export COMPOSE_PROJECT_NAME="$site_name"
                 docker-compose -p "$site_name" down -v 2>/dev/null || true
                 cd ..
                 
@@ -253,6 +266,34 @@ cleanup_sites() {
     else
         print_status "Cleanup cancelled."
     fi
+}
+
+# Function to fix container conflicts
+fix_conflicts() {
+    print_header "Fixing Container Conflicts"
+    
+    print_status "Stopping all WordPress-related containers..."
+    
+    # Stop all containers with wp-boilerplate in the name
+    docker ps -q --filter "name=wp-boilerplate" | xargs -r docker stop
+    docker ps -aq --filter "name=wp-boilerplate" | xargs -r docker rm
+    
+    # Stop all containers with wordpress in the name
+    docker ps -q --filter "name=wordpress" | xargs -r docker stop
+    docker ps -aq --filter "name=wordpress" | xargs -r docker rm
+    
+    # Stop all containers with mysql in the name
+    docker ps -q --filter "name=mysql" | xargs -r docker stop
+    docker ps -aq --filter "name=mysql" | xargs -r docker rm
+    
+    # Stop all containers with phpmyadmin in the name
+    docker ps -q --filter "name=phpmyadmin" | xargs -r docker stop
+    docker ps -aq --filter "name=phpmyadmin" | xargs -r docker rm
+    
+    print_status "Container conflicts resolved!"
+    print_warning "You may need to restart your sites:"
+    print_status "  ./manage-multiple-sites.sh list"
+    print_status "  ./manage-multiple-sites.sh start <site_name>"
 }
 
 # Function to show help
@@ -268,6 +309,7 @@ show_help() {
     echo "  restart <site_name>         Restart a specific site"
     echo "  list                        List all available sites"
     echo "  status                      Show system status"
+    echo "  fix-conflicts               Fix container name conflicts"
     echo "  cleanup                     Remove all sites (with confirmation)"
     echo "  help                        Show this help message"
     echo
@@ -364,6 +406,10 @@ case "$1" in
         
     "cleanup")
         cleanup_sites
+        ;;
+        
+    "fix-conflicts")
+        fix_conflicts
         ;;
         
     "help"|"-h"|"--help")

@@ -210,6 +210,9 @@ Use the included management script for easy multi-site setup:
 # Check system status
 ./manage-multiple-sites.sh status
 
+# Fix container conflicts (if you get naming conflicts)
+./manage-multiple-sites.sh fix-conflicts
+
 # Get help
 ./manage-multiple-sites.sh help
 ```
@@ -521,7 +524,25 @@ docker-compose up -d wordpress
 
 ## 🔍 Troubleshooting
 
-### Common Issues
+### **Container Name Conflicts (Most Common Issue)**
+
+If you get errors like "Container name already in use", this happens when running multiple sites:
+
+```bash
+# Quick fix - stop all conflicting containers
+./manage-multiple-sites.sh fix-conflicts
+
+# Or manually stop specific containers
+docker stop wp-boilerplate-mysql wp-boilerplate-wordpress wp-boilerplate-phpmyadmin
+docker rm wp-boilerplate-mysql wp-boilerplate-wordpress wp-boilerplate-phpmyadmin
+
+# Then restart your sites
+./manage-multiple-sites.sh start <site_name>
+```
+
+**Why this happens:** The old docker-compose.yml used hardcoded container names. The updated version uses dynamic names based on project name.
+
+### **Common Issues**
 
 1. **Port Already in Use**
    ```bash
@@ -542,6 +563,28 @@ docker-compose up -d wordpress
    # Fix WordPress file permissions
    docker-compose exec wordpress chown -R www-data:www-data /var/www/html
    ```
+
+### **Multi-Site Specific Issues**
+
+1. **Sites interfering with each other**
+   ```bash
+   # Use different project names
+   docker-compose -p site1 up -d
+   docker-compose -p site2 up -d
+   ```
+
+2. **Port conflicts**
+   ```bash
+   # Check available ports
+   ./manage-multiple-sites.sh status
+   
+   # Use the management script for automatic port assignment
+   ./manage-multiple-sites.sh create newsite
+   ```
+
+3. **Database conflicts**
+   - Each site should have unique database credentials
+   - The management script automatically generates unique credentials
 
 ### Logs and Debugging
 ```bash

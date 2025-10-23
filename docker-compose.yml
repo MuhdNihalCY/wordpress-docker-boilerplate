@@ -8,12 +8,10 @@
 #
 # For production deployment, see README.md for additional configuration
 
-version: '3.8'
-
 services:
   wordpress:
     image: wordpress:6.4-php8.2-apache
-    container_name: wp-boilerplate-wordpress
+    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-wordpress
     restart: unless-stopped
     ports:
       - "${WORDPRESS_PORT:-8080}:80"
@@ -46,7 +44,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: wp-boilerplate-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -69,7 +67,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
-    container_name: wp-boilerplate-phpmyadmin
+    container_name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}-phpmyadmin
     restart: unless-stopped
     ports:
       - "${PHPMYADMIN_PORT:-8081}:80"
