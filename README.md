@@ -101,15 +101,17 @@ docker-compose logs           # View logs
 
 ## Troubleshooting
 
+**Port conflicts**: Script automatically finds available ports and updates .env
 **Container conflicts**: Each site uses unique container names
-**Port conflicts**: Script automatically finds available ports
 **Database issues**: Check MySQL container logs: `docker-compose logs mysql`
+**Service startup**: Script verifies services are running before completion
 
 ## Features
 
 - ✅ WordPress 6.4 + PHP 8.2 + MySQL 8.0
 - ✅ Complete site isolation for multiple sites
 - ✅ Built-in debug logging with write_log() function
+- ✅ Automatic port conflict resolution
 - ✅ Production-ready configuration
 - ✅ Simple management scripts
 - ✅ Health checks and auto-restart
