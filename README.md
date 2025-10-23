@@ -102,9 +102,10 @@ docker-compose logs           # View logs
 ## Troubleshooting
 
 **Port conflicts**: Script automatically finds available ports and updates .env
+**Database connection errors**: Script waits for MySQL initialization and verifies connections
 **Container conflicts**: Each site uses unique container names
-**Database issues**: Check MySQL container logs: `docker-compose logs mysql`
 **Service startup**: Script verifies services are running before completion
+**WordPress initialization**: May take 30-60 seconds for first-time setup
 
 ## Features
 
@@ -112,6 +113,7 @@ docker-compose logs           # View logs
 - ✅ Complete site isolation for multiple sites
 - ✅ Built-in debug logging with write_log() function
 - ✅ Automatic port conflict resolution
+- ✅ Database connection verification and waiting
 - ✅ Production-ready configuration
 - ✅ Simple management scripts
 - ✅ Health checks and auto-restart
