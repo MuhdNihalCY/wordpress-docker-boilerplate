@@ -1,47 +1,66 @@
-# WordPress Docker Setup for Lightspeed Server
+# WordPress Docker Boilerplate
 
-This repository contains a complete Docker setup for running WordPress on a Lightspeed server.
+A complete, production-ready WordPress Docker setup with advanced debug logging capabilities. Perfect for developers who want to quickly spin up a WordPress development environment or deploy to production.
+
+## ✨ Features
+
+- 🐳 **Complete Docker Environment**: WordPress + MySQL 8.0 + phpMyAdmin
+- 🐛 **Advanced Debug Logging**: Custom `write_log()` function with multiple log levels
+- 🔧 **Production Ready**: Nginx reverse proxy configuration included
+- 📊 **Database Management**: phpMyAdmin for easy database administration
+- 🚀 **One-Command Setup**: Get started in minutes
+- 📖 **Comprehensive Documentation**: Detailed guides and examples
+- 🔒 **Security Focused**: Best practices and security configurations
+- 🎯 **Developer Friendly**: Debug tools, logging, and testing scripts
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose installed on your server
-- Basic knowledge of Docker commands
-- Domain name pointing to your server (for production)
+- Docker and Docker Compose installed
+- Git (for cloning)
+- Basic terminal knowledge
 
-### 1. Clone and Setup
+### 1. Clone the Repository
 ```bash
-# Navigate to your project directory
-cd /Users/nihalcy/Desktop/docker_site/lightspeed/site1
+git clone https://github.com/yourusername/wordpress-docker-boilerplate.git
+cd wordpress-docker-boilerplate
+```
 
-# Copy environment file and customize
+### 2. Quick Setup
+```bash
+# Run the setup script (recommended)
+./setup.sh
+
+# OR manually setup
 cp environment.env .env
-# Edit .env with your preferred database credentials
+# Edit .env with your preferred settings
 ```
 
-### 2. Start the Services
+### 3. Start WordPress
 ```bash
-# Start all services
 docker-compose up -d
-
-# Check if services are running
-docker-compose ps
 ```
 
-### 3. Access Your WordPress Site
-- **WordPress**: http://your-server-ip:8080
-- **phpMyAdmin**: http://your-server-ip:8081
+### 4. Access Your Site
+- **WordPress**: http://localhost:8080
+- **phpMyAdmin**: http://localhost:8081
+- **WordPress Admin**: http://localhost:8080/wp-admin
 
 ## 📁 Project Structure
 
 ```
-site1/
+wordpress-docker-boilerplate/
 ├── docker-compose.yml              # Main Docker Compose configuration
 ├── environment.env                 # Environment variables template
-├── .env                           # Environment variables (created from template)
+├── .env                           # Your environment variables (create from template)
 ├── nginx.conf                     # Nginx reverse proxy configuration
 ├── debug-config.php               # WordPress debug configuration
 ├── DEBUG-LOGGING-GUIDE.md         # Comprehensive debug logging guide
+├── setup.sh                       # Automated setup script
+├── .gitignore                     # Git ignore file
+├── LICENSE                        # MIT License
+├── CONTRIBUTING.md                # Contribution guidelines
+├── CHANGELOG.md                   # Version history and changes
 ├── wp-content/                    # WordPress themes and plugins
 │   ├── plugins/
 │   │   ├── custom-debug-logger.php    # Custom debug logging plugin
@@ -54,24 +73,34 @@ site1/
 ## 🔧 Configuration
 
 ### Environment Variables
-Edit the `.env` file to customize your setup:
+The `.env` file contains all configuration settings. Copy from `environment.env` and customize:
 
 ```env
 # Database Configuration
 MYSQL_DATABASE=wordpress_db
 MYSQL_USER=wordpress_user
-MYSQL_PASSWORD=your_secure_password
-MYSQL_ROOT_PASSWORD=your_root_password
+MYSQL_PASSWORD=your_secure_password_here
+MYSQL_ROOT_PASSWORD=your_root_password_here
 
 # WordPress Configuration
 WORDPRESS_TABLE_PREFIX=wp_
 WORDPRESS_DEBUG=1
+
+# Optional: Custom domain (for production)
+# WORDPRESS_URL=http://yourdomain.com
+# WORDPRESS_HOME=http://yourdomain.com
 ```
 
 ### Port Configuration
-- WordPress: Port 8080
-- phpMyAdmin: Port 8081
-- MySQL: Internal port 3306
+- **WordPress**: Port 8080 (change if needed)
+- **phpMyAdmin**: Port 8081 (change if needed)
+- **MySQL**: Internal port 3306
+
+### Customization Options
+- Change ports in `docker-compose.yml`
+- Modify database credentials in `.env`
+- Update domain settings for production
+- Customize debug settings in `debug-config.php`
 
 ## 🐛 Debug Logging & Development Tools
 
@@ -152,6 +181,38 @@ write_log('Function called', 'debug');
 - Use the admin interface to monitor logs
 
 For detailed debug logging documentation, see: `DEBUG-LOGGING-GUIDE.md`
+
+## 🏗️ Boilerplate Standards
+
+This boilerplate follows industry best practices:
+
+### **WordPress Standards**
+- ✅ WordPress Coding Standards compliance
+- ✅ Proper PHPDoc documentation
+- ✅ Security best practices
+- ✅ Performance optimizations
+- ✅ Accessibility considerations
+
+### **Docker Best Practices**
+- ✅ Multi-stage builds where applicable
+- ✅ Health checks for all services
+- ✅ Proper volume management
+- ✅ Network isolation
+- ✅ Resource limits and optimization
+
+### **Development Standards**
+- ✅ Comprehensive documentation
+- ✅ Automated setup scripts
+- ✅ Environment variable management
+- ✅ Debug logging and monitoring
+- ✅ Error handling and validation
+
+### **Security Features**
+- ✅ No hardcoded credentials
+- ✅ Environment-based configuration
+- ✅ Input validation and sanitization
+- ✅ Proper file permissions
+- ✅ Security headers configuration
 
 ## 🌐 Production Deployment
 
