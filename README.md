@@ -22,7 +22,7 @@ A complete, production-ready WordPress Docker setup with advanced debug logging 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/wordpress-docker-boilerplate.git
+git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git
 cd wordpress-docker-boilerplate
 ```
 

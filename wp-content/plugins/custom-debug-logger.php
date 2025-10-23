@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WordPress Debug Logger
- * Plugin URI: https://github.com/yourusername/wordpress-docker-boilerplate
+ * Plugin URI: https://github.com/MuhdNihalCY/wordpress-docker-boilerplate
  * Description: Advanced debug logging functionality for WordPress development with custom write_log() function and admin interface.
  * Version: 1.0.0
  * Author: WordPress Docker Boilerplate
- * Author URI: https://github.com/yourusername/wordpress-docker-boilerplate
+ * Author URI: https://github.com/MuhdNihalCY/wordpress-docker-boilerplate
  * License: MIT
  * License URI: https://opensource.org/licenses/MIT
  * Text Domain: wp-debug-logger
