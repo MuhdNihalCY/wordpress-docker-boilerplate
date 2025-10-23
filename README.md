@@ -1,74 +1,146 @@
 # WordPress Docker Boilerplate
 
-A complete, production-ready WordPress Docker setup with advanced debug logging capabilities. Perfect for developers who want to quickly spin up a WordPress development environment or deploy to production.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![WordPress](https://img.shields.io/badge/WordPress-6.4+-blue.svg)](https://wordpress.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://php.net/)
+
+A complete, production-ready WordPress Docker boilerplate with advanced debug logging, multi-site management, and enterprise-grade security. Perfect for developers, agencies, and teams who need a robust WordPress development environment or production deployment.
 
 ## ✨ Features
 
-- 🐳 **Complete Docker Environment**: WordPress + MySQL 8.0 + phpMyAdmin
-- 🐛 **Advanced Debug Logging**: Custom `write_log()` function with multiple log levels
-- 🔧 **Production Ready**: Nginx reverse proxy configuration included
-- 📊 **Database Management**: phpMyAdmin for easy database administration
-- 🚀 **One-Command Setup**: Get started in minutes
-- 📖 **Comprehensive Documentation**: Detailed guides and examples
-- 🔒 **Security Focused**: Best practices and security configurations
-- 🎯 **Developer Friendly**: Debug tools, logging, and testing scripts
+### 🐳 **Complete Docker Environment**
+- **WordPress 6.4** with PHP 8.2 and Apache
+- **MySQL 8.0** with optimized configuration
+- **phpMyAdmin 5.2** for database management
+- **Health checks** and automatic restarts
+- **Volume persistence** for data safety
+
+### 🔀 **Multi-Site Management**
+- **Unlimited sites** on the same system
+- **Complete site isolation** - no cross-site interference
+- **Automated management** with `manage-multiple-sites.sh`
+- **Dynamic port assignment** and conflict resolution
+- **Independent databases** and configurations
+
+### 🐛 **Advanced Debug Logging**
+- **Custom `write_log()` function** with multiple log levels
+- **Admin interface** for log viewing and management
+- **Structured logging** with timestamps and context
+- **Production-safe** debug configurations
+- **Comprehensive logging guide** included
+
+### 🔒 **Enterprise Security**
+- **Security-hardened** WordPress configuration
+- **Environment-based** secrets management
+- **Production-ready** SSL and reverse proxy setup
+- **Best practices** for Docker security
+- **Regular security updates** and monitoring
+
+### 🚀 **Developer Experience**
+- **One-command setup** with `./setup.sh`
+- **Automated site creation** and management
+- **Comprehensive documentation** and examples
+- **Testing scripts** and validation tools
+- **CI/CD ready** configuration
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose installed
-- Git (for cloning)
-- Basic terminal knowledge
 
-### 1. Clone the Repository
+- **Docker Desktop** (latest version) - [Download](https://www.docker.com/products/docker-desktop/)
+- **Docker Compose** (included with Docker Desktop)
+- **Git** - [Download](https://git-scm.com/downloads)
+- **Terminal/Command Line** access
+- **4GB RAM minimum** (8GB recommended for multiple sites)
+
+### Installation Methods
+
+#### **Method 1: Automated Setup (Recommended)**
+
 ```bash
+# Clone the repository
 git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git
 cd wordpress-docker-boilerplate
-```
 
-### 2. Quick Setup
-```bash
-# Run the setup script (recommended)
+# Run the automated setup
 ./setup.sh
 
-# OR manually setup
-cp environment.env .env
-# Edit .env with your preferred settings
+# Access your site
+open http://localhost:8080
 ```
 
-### 3. Start WordPress
+#### **Method 2: Manual Setup**
+
 ```bash
+# Clone the repository
+git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git
+cd wordpress-docker-boilerplate
+
+# Create environment file
+cp environment.env .env
+
+# Customize settings (optional)
+nano .env
+
+# Start the services
 docker-compose up -d
+
+# Access your site
+open http://localhost:8080
 ```
 
-### 4. Access Your Site
-- **WordPress**: http://localhost:8080
-- **phpMyAdmin**: http://localhost:8081
-- **WordPress Admin**: http://localhost:8080/wp-admin
+### First-Time Access
+
+1. **WordPress Site**: http://localhost:8080
+2. **WordPress Admin**: http://localhost:8080/wp-admin
+3. **phpMyAdmin**: http://localhost:8081
+4. **Debug Logs**: http://localhost:8080/wp-admin/tools.php?page=debug-logs
+
+### Default Credentials
+
+- **WordPress Admin**: Create during first-time setup
+- **phpMyAdmin**: 
+  - Username: `wordpress_user` (or your custom MYSQL_USER)
+  - Password: `change_this_password_123` (or your custom MYSQL_PASSWORD)
 
 ## 📁 Project Structure
 
 ```
 wordpress-docker-boilerplate/
-├── docker-compose.yml              # Main Docker Compose configuration
-├── environment.env                 # Environment variables template
-├── .env                           # Your environment variables (create from template)
-├── nginx.conf                     # Nginx reverse proxy configuration
-├── debug-config.php               # WordPress debug configuration
-├── DEBUG-LOGGING-GUIDE.md         # Comprehensive debug logging guide
-├── setup.sh                       # Automated setup script
-├── manage-multiple-sites.sh       # Multi-site management script
-├── .gitignore                     # Git ignore file
-├── LICENSE                        # MIT License
-├── CONTRIBUTING.md                # Contribution guidelines
-├── CHANGELOG.md                   # Version history and changes
-├── wp-content/                    # WordPress themes and plugins
-│   ├── plugins/
-│   │   ├── custom-debug-logger.php    # Custom debug logging plugin
-│   │   └── test-debug-logging.php      # Debug logging test script
-│   ├── debug-logs/                # Custom debug logs directory
-│   └── debug.log                  # WordPress debug log
-└── README.md                      # This file
+├── 📋 Core Configuration
+│   ├── docker-compose.yml              # Main Docker Compose configuration
+│   ├── environment.env                 # Environment variables template
+│   ├── .env                           # Your environment variables (create from template)
+│   ├── debug-config.php               # WordPress debug configuration
+│   └── nginx.conf                     # Nginx reverse proxy configuration
+│
+├── 🛠️ Management Scripts
+│   ├── setup.sh                       # Automated setup script
+│   ├── manage-multiple-sites.sh       # Multi-site management script
+│   ├── demo-site-isolation.sh         # Site isolation demonstration
+│   └── test-container-fix.sh          # Container conflict testing
+│
+├── 📚 Documentation
+│   ├── README.md                      # This comprehensive guide
+│   ├── DEBUG-LOGGING-GUIDE.md         # Debug logging documentation
+│   ├── CONTRIBUTING.md                # Contribution guidelines
+│   ├── CHANGELOG.md                   # Version history and changes
+│   └── LICENSE                        # MIT License
+│
+├── 🔧 WordPress Customization
+│   └── wp-content/                    # WordPress themes and plugins
+│       ├── plugins/
+│       │   ├── custom-debug-logger.php    # Custom debug logging plugin
+│       │   └── test-debug-logging.php     # Debug logging test script
+│       ├── themes/                    # WordPress themes directory
+│       ├── debug-logs/                # Custom debug logs directory
+│       └── debug.log                  # WordPress debug log
+│
+└── 🗂️ Generated Files (after setup)
+    ├── .env                           # Your environment configuration
+    ├── wp-content/debug-logs/         # Debug log files
+    └── Docker volumes/                # Persistent data storage
 ```
 
 ## 🔧 Configuration
@@ -78,28 +150,64 @@ The `.env` file contains all configuration settings. Copy from `environment.env`
 
 ```env
 # Database Configuration
-MYSQL_DATABASE=wordpress_db
-MYSQL_USER=wordpress_user
-MYSQL_PASSWORD=your_secure_password_here
-MYSQL_ROOT_PASSWORD=your_root_password_here
+MYSQL_DATABASE=wordpress_db                    # Database name
+MYSQL_USER=wordpress_user                     # Database user
+MYSQL_PASSWORD=your_secure_password_here       # Database password
+MYSQL_ROOT_PASSWORD=your_root_password_here   # Root password
 
 # WordPress Configuration
-WORDPRESS_TABLE_PREFIX=wp_
-WORDPRESS_DEBUG=1
+WORDPRESS_TABLE_PREFIX=wp_                    # Table prefix
+WORDPRESS_DEBUG=1                             # Debug mode (0 for production)
 
-# Optional: Custom domain (for production)
-# WORDPRESS_URL=http://yourdomain.com
-# WORDPRESS_HOME=http://yourdomain.com
+# Port Configuration
+WORDPRESS_PORT=8080                           # WordPress port
+PHPMYADMIN_PORT=8081                          # phpMyAdmin port
+
+# Production Settings (uncomment for production)
+# WORDPRESS_URL=https://yourdomain.com
+# WORDPRESS_HOME=https://yourdomain.com
 ```
 
-### Port Configuration
-- **WordPress**: Port 8080 (change if needed)
-- **phpMyAdmin**: Port 8081 (change if needed)
-- **MySQL**: Internal port 3306
+### Security Configuration
 
-### Customization Options
-- Change ports in `docker-compose.yml`
-- Modify database credentials in `.env`
+#### **Development Environment**
+- Debug logging enabled (`WORDPRESS_DEBUG=1`)
+- Default passwords (change before production)
+- Automatic updates disabled
+- Memory limits optimized for development
+
+#### **Production Environment**
+- Debug logging disabled (`WORDPRESS_DEBUG=0`)
+- Strong, unique passwords required
+- SSL/HTTPS configuration
+- Security headers enabled
+- Regular security updates
+
+### Docker Configuration
+
+#### **Services Overview**
+- **WordPress**: PHP 8.2 + Apache + WordPress 6.4
+- **MySQL**: Version 8.0 with optimized settings
+- **phpMyAdmin**: Version 5.2 for database management
+
+#### **Resource Limits**
+```yaml
+# Memory limits (configurable)
+WP_MEMORY_LIMIT: 256M
+WP_MAX_MEMORY_LIMIT: 512M
+
+# Container limits
+deploy:
+  resources:
+    limits:
+      memory: 512M
+      cpus: '0.5'
+```
+
+#### **Health Checks**
+- WordPress: HTTP health check every 30s
+- MySQL: Database ping every 30s
+- Automatic restart on failure
 - Update domain settings for production
 - Customize debug settings in `debug-config.php`
 
@@ -183,9 +291,62 @@ write_log('Function called', 'debug');
 
 For detailed debug logging documentation, see: `DEBUG-LOGGING-GUIDE.md`
 
-## 🔀 Running Multiple Sites
+## 📖 Usage Guide
 
-You can easily run multiple WordPress sites on the same system using different approaches:
+### Basic Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Restart a specific service
+docker-compose restart wordpress
+
+# Execute commands in containers
+docker-compose exec wordpress wp --info
+docker-compose exec mysql mysql -u root -p
+```
+
+### Management Scripts
+
+```bash
+# Setup new environment
+./setup.sh
+
+# Manage multiple sites
+./manage-multiple-sites.sh create newsite
+./manage-multiple-sites.sh start newsite
+./manage-multiple-sites.sh stop newsite
+./manage-multiple-sites.sh list
+
+# Verify site isolation
+./manage-multiple-sites.sh verify-isolation
+
+# Demo site independence
+./demo-site-isolation.sh
+```
+
+### WordPress CLI Integration
+
+```bash
+# Install WordPress CLI in container
+docker-compose exec wordpress bash -c "curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/gh-pages/phar/wp-cli.phar && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp"
+
+# Use WordPress CLI
+docker-compose exec wordpress wp plugin list
+docker-compose exec wordpress wp theme list
+docker-compose exec wordpress wp user list
+```
+
+## 🔀 Multi-Site Management
+
+Run unlimited WordPress sites simultaneously with complete isolation:
 
 ### **Method 1: Automated Management Script (Recommended)**
 
@@ -494,26 +655,138 @@ This boilerplate follows industry best practices:
 
 ## 🌐 Production Deployment
 
-### 1. Domain Setup
-1. Point your domain to your server's IP address
-2. Update the nginx.conf file with your domain name
-3. Obtain SSL certificates (Let's Encrypt recommended)
+### Prerequisites
 
-### 2. Security Considerations
-- Change default passwords in `.env`
-- Use strong, unique passwords
-- Enable SSL/HTTPS
-- Regular backups of MySQL data
-- Keep WordPress and plugins updated
+- **Server**: Ubuntu 20.04+ or CentOS 8+ with Docker installed
+- **Resources**: Minimum 2GB RAM, 4GB recommended
+- **Domain**: Registered domain name with DNS access
+- **SSL**: SSL certificate (Let's Encrypt recommended)
 
-### 3. Using Nginx Reverse Proxy
-If you want to use Nginx as a reverse proxy:
+### Step 1: Server Setup
 
 ```bash
-# Add nginx service to docker-compose.yml
-# Mount nginx.conf to your nginx container
-# Update port mappings accordingly
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Install Nginx
+sudo apt install nginx -y
 ```
+
+### Step 2: Deploy WordPress
+
+```bash
+# Clone the boilerplate
+git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git
+cd wordpress-docker-boilerplate
+
+# Configure for production
+cp environment.env .env
+nano .env  # Update with production values
+
+# Production .env example:
+WORDPRESS_DEBUG=0
+MYSQL_PASSWORD=your_very_secure_password_here
+MYSQL_ROOT_PASSWORD=your_very_secure_root_password_here
+WORDPRESS_URL=https://yourdomain.com
+WORDPRESS_HOME=https://yourdomain.com
+
+# Start services
+docker-compose up -d
+```
+
+### Step 3: Nginx Configuration
+
+```bash
+# Configure Nginx
+sudo cp nginx.conf /etc/nginx/sites-available/wordpress
+sudo sed -i 's/yourdomain.com/yourdomain.com/g' /etc/nginx/sites-available/wordpress
+sudo ln -s /etc/nginx/sites-available/wordpress /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+
+# Test configuration
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### Step 4: SSL Certificate
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx -y
+
+# Obtain SSL certificate
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+
+# Test auto-renewal
+sudo certbot renew --dry-run
+```
+
+### Step 5: Security Hardening
+
+```bash
+# Configure firewall
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# Set proper file permissions
+sudo chown -R www-data:www-data wp-content/
+sudo chmod -R 755 wp-content/
+
+# Enable automatic security updates
+sudo apt install unattended-upgrades -y
+sudo dpkg-reconfigure -plow unattended-upgrades
+```
+
+### Step 6: Backup Strategy
+
+```bash
+# Create backup script
+cat > backup.sh << 'EOF'
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backups"
+
+# Create backup directory
+mkdir -p $BACKUP_DIR
+
+# Database backup
+docker-compose exec -T mysql mysqldump -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE > $BACKUP_DIR/db_backup_$DATE.sql
+
+# Files backup
+tar -czf $BACKUP_DIR/files_backup_$DATE.tar.gz wp-content/ .env docker-compose.yml
+
+# Clean old backups (keep last 7 days)
+find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+
+echo "Backup completed: $DATE"
+EOF
+
+chmod +x backup.sh
+
+# Schedule daily backups
+(crontab -l 2>/dev/null; echo "0 2 * * * /path/to/backup.sh") | crontab -
+```
+
+### Production Checklist
+
+- ✅ **Security**: Strong passwords, SSL enabled, firewall configured
+- ✅ **Performance**: Resource limits set, caching enabled
+- ✅ **Monitoring**: Log rotation, health checks, uptime monitoring
+- ✅ **Backups**: Automated daily backups, tested restore procedures
+- ✅ **Updates**: Regular WordPress and plugin updates
+- ✅ **Documentation**: Deployment procedures documented
 
 ## 📊 Management Commands
 
@@ -692,17 +965,101 @@ For issues specific to this Docker setup, check:
 - WordPress debug logs
 - MySQL error logs
 
-## 📝 Notes
+## ❓ Frequently Asked Questions
 
-- This setup uses Docker volumes for persistent data
-- WordPress files are stored in `wordpress_data` volume
-- MySQL data is stored in `mysql_data` volume
-- Custom themes/plugins should be placed in `wp-content/` directory
-- Debug logging is enabled by default for development
-- Custom `write_log()` function is available for advanced logging
-- Debug logs are stored in `/wp-content/debug-logs/` directory
-- Always backup before making major changes
-- Disable debug logging (`WORDPRESS_DEBUG=0`) in production
+### **General Questions**
+
+**Q: Can I use this for production?**
+A: Yes! This boilerplate is production-ready. See the [Production Deployment](#-production-deployment) section for detailed setup instructions.
+
+**Q: How many sites can I run simultaneously?**
+A: Unlimited! Each site is completely isolated with its own containers, databases, and configurations.
+
+**Q: What's the difference between this and other WordPress Docker setups?**
+A: This boilerplate includes advanced debug logging, multi-site management, complete site isolation, and comprehensive documentation.
+
+### **Technical Questions**
+
+**Q: Can I change the WordPress version?**
+A: Yes, edit the `image` field in `docker-compose.yml`. Supported versions: `wordpress:6.4-php8.2-apache`, `wordpress:6.3-php8.1-apache`, etc.
+
+**Q: How do I update WordPress?**
+A: Update the image version in `docker-compose.yml` and run `docker-compose pull && docker-compose up -d`.
+
+**Q: Can I use a different database?**
+A: Yes, you can modify `docker-compose.yml` to use PostgreSQL, MariaDB, or external databases.
+
+**Q: How do I backup my site?**
+A: Use the backup script in the [Production Deployment](#-production-deployment) section or run:
+```bash
+docker-compose exec mysql mysqldump -u root -p wordpress_db > backup.sql
+```
+
+### **Multi-Site Questions**
+
+**Q: How do I create multiple sites?**
+A: Use the management script: `./manage-multiple-sites.sh create newsite`
+
+**Q: Can sites interfere with each other?**
+A: No! Each site has complete isolation with separate containers, databases, and configurations.
+
+**Q: How do I manage multiple sites?**
+A: Use the management script commands:
+- `./manage-multiple-sites.sh list` - List all sites
+- `./manage-multiple-sites.sh start site1` - Start a site
+- `./manage-multiple-sites.sh stop site1` - Stop a site
+
+### **Debug Logging Questions**
+
+**Q: How do I enable debug logging?**
+A: Set `WORDPRESS_DEBUG=1` in your `.env` file and restart the containers.
+
+**Q: Where are the debug logs stored?**
+A: Logs are stored in `wp-content/debug-logs/` and can be viewed in the WordPress admin.
+
+**Q: How do I use the custom write_log() function?**
+A: Simply call `write_log('Your message', 'info')` in your PHP code. See the [Debug Logging Guide](DEBUG-LOGGING-GUIDE.md) for examples.
+
+### **Troubleshooting Questions**
+
+**Q: I get "Container name already in use" error.**
+A: Run `./manage-multiple-sites.sh fix-conflicts` to resolve container conflicts.
+
+**Q: WordPress won't load.**
+A: Check the logs: `docker-compose logs wordpress` and ensure MySQL is running: `docker-compose logs mysql`.
+
+**Q: Can't access phpMyAdmin.**
+A: Verify the port in your `.env` file and check if it's not blocked by firewall.
+
+**Q: Database connection failed.**
+A: Ensure MySQL is fully started before WordPress. Check database credentials in `.env`.
+
+## 📝 Additional Notes
+
+### **Data Persistence**
+- WordPress files are stored in Docker volumes for persistence
+- Database data survives container restarts
+- Debug logs are stored in `wp-content/debug-logs/`
+- Custom plugins and themes go in `wp-content/`
+
+### **Security Considerations**
+- Change default passwords before production deployment
+- Use strong, unique passwords (minimum 12 characters)
+- Enable SSL/HTTPS for production sites
+- Regular backups and security updates
+- Monitor debug logs for security issues
+
+### **Performance Optimization**
+- Resource limits are configured for optimal performance
+- Health checks ensure service reliability
+- Volume optimization for faster I/O
+- Memory limits prevent resource exhaustion
+
+### **Development Workflow**
+- Use `write_log()` for debugging your code
+- Test with multiple sites for client work
+- Use the management script for easy site management
+- Debug logs help identify issues quickly
 
 ---
 

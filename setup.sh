@@ -1,9 +1,29 @@
 #!/bin/bash
 
 # WordPress Docker Boilerplate Setup Script
-# This script helps you set up the WordPress Docker environment quickly
+# ==========================================
+# This script automates the initial setup for the WordPress Docker Boilerplate.
+# It handles environment configuration, Docker service startup, and plugin activation.
+#
+# Features:
+# - Automated environment file creation
+# - Docker service validation and startup
+# - Custom debug logger plugin activation
+# - Comprehensive error handling and validation
+# - Colored output for better user experience
+#
+# Usage: ./setup.sh
+#
+# Requirements:
+# - Docker and Docker Compose installed
+# - Internet connection for image downloads
+# - Sufficient disk space (minimum 2GB)
+#
+# Author: WordPress Docker Boilerplate
+# License: MIT
+# Version: 1.0.0
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'

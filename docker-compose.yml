@@ -1,12 +1,33 @@
 # WordPress Docker Boilerplate
-# A complete WordPress development environment with MySQL and phpMyAdmin
+# =============================
+# A complete, production-ready WordPress development environment with MySQL and phpMyAdmin
 # 
-# Usage:
+# Features:
+# - WordPress 6.4 with PHP 8.2 and Apache
+# - MySQL 8.0 with optimized configuration
+# - phpMyAdmin 5.2 for database management
+# - Health checks and automatic restarts
+# - Volume persistence for data safety
+# - Multi-site support with complete isolation
+# - Advanced debug logging capabilities
+#
+# Quick Start:
 #   1. Copy environment.env to .env and customize
 #   2. Run: docker-compose up -d
 #   3. Access WordPress at http://localhost:8080
 #
-# For production deployment, see README.md for additional configuration
+# Multi-Site Management:
+#   ./manage-multiple-sites.sh create newsite
+#   ./manage-multiple-sites.sh start newsite
+#
+# Production Deployment:
+#   See README.md for comprehensive production setup guide
+#
+# Security:
+#   - Change default passwords in .env
+#   - Use strong, unique passwords
+#   - Enable SSL/HTTPS for production
+#   - Regular backups and updates
 
 services:
   wordpress:
