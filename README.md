@@ -210,6 +210,9 @@ Use the included management script for easy multi-site setup:
 # Check system status
 ./manage-multiple-sites.sh status
 
+# Verify all sites are properly isolated
+./manage-multiple-sites.sh verify-isolation
+
 # Fix container conflicts (if you get naming conflicts)
 ./manage-multiple-sites.sh fix-conflicts
 
@@ -417,6 +420,35 @@ services:
           cpus: '0.5'
 ```
 
+### **Complete Site Isolation**
+
+Each site is **completely independent** and will not affect other sites:
+
+✅ **Container Isolation**
+- Unique container names: `site1_wordpress`, `site2_wordpress`, etc.
+- Separate Docker networks per site
+- Independent container lifecycles
+
+✅ **Data Isolation**
+- Separate Docker volumes: `site1_wordpress_data`, `site2_wordpress_data`
+- Independent MySQL databases with unique credentials
+- Isolated WordPress file systems
+
+✅ **Network Isolation**
+- Different ports for each site
+- Separate Docker networks
+- No cross-site communication
+
+✅ **Database Isolation**
+- Unique database names: `wp_site1_timestamp_db`
+- Different MySQL users and passwords
+- Separate WordPress table prefixes
+
+✅ **Configuration Isolation**
+- Site-specific `.env.site` files
+- Independent environment variables
+- No shared configuration
+
 ### **Best Practices for Multiple Sites**
 
 1. **Use descriptive project names** (`-p site1`, `-p site2`)
@@ -426,6 +458,7 @@ services:
 5. **Resource monitoring** to prevent conflicts
 6. **Regular backups** for each site
 7. **SSL certificates** for production sites
+8. **Verify isolation** with `./manage-multiple-sites.sh verify-isolation`
 
 ## 🏗️ Boilerplate Standards
 

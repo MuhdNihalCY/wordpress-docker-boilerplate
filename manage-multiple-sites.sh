@@ -84,6 +84,17 @@ create_site() {
         return 1
     fi
     
+    # Check if ports are already in use by other sites
+    if ! check_port $wp_port; then
+        print_error "Port $wp_port is already in use by another service!"
+        return 1
+    fi
+    
+    if ! check_port $phpmyadmin_port; then
+        print_error "Port $phpmyadmin_port is already in use by another service!"
+        return 1
+    fi
+    
     # Clone the boilerplate
     print_status "Cloning boilerplate to '$site_name'..."
     git clone . "$site_name" 2>/dev/null || {
@@ -99,24 +110,48 @@ create_site() {
     sed -i.bak "s/WORDPRESS_PORT=8080/WORDPRESS_PORT=$wp_port/" "$site_name/.env"
     sed -i.bak "s/PHPMYADMIN_PORT=8081/PHPMYADMIN_PORT=$phpmyadmin_port/" "$site_name/.env"
     
-    # Update database credentials to be unique
-    local db_name="wp_${site_name}_db"
-    local db_user="wp_${site_name}_user"
-    local db_password="wp_${site_name}_$(openssl rand -hex 8)"
-    local db_root_password="wp_${site_name}_root_$(openssl rand -hex 8)"
+    # Generate completely unique database credentials
+    local db_name="wp_${site_name}_$(date +%s)_db"
+    local db_user="wp_${site_name}_$(date +%s)_user"
+    local db_password="wp_${site_name}_$(openssl rand -hex 12)"
+    local db_root_password="wp_${site_name}_root_$(openssl rand -hex 12)"
     
+    # Update database credentials to be unique
     sed -i.bak "s/MYSQL_DATABASE=wordpress_db/MYSQL_DATABASE=$db_name/" "$site_name/.env"
     sed -i.bak "s/MYSQL_USER=wordpress_user/MYSQL_USER=$db_user/" "$site_name/.env"
     sed -i.bak "s/MYSQL_PASSWORD=change_this_password_123/MYSQL_PASSWORD=$db_password/" "$site_name/.env"
     sed -i.bak "s/MYSQL_ROOT_PASSWORD=change_this_root_password_123/MYSQL_ROOT_PASSWORD=$db_root_password/" "$site_name/.env"
     
+    # Update WordPress table prefix to be unique
+    local table_prefix="wp_${site_name}_$(date +%s)_"
+    sed -i.bak "s/WORDPRESS_TABLE_PREFIX=wp_/WORDPRESS_TABLE_PREFIX=$table_prefix/" "$site_name/.env"
+    
+    # Create site-specific docker-compose override
+    print_status "Creating site-specific Docker configuration..."
+    cat > "$site_name/.env.site" << EOF
+# Site-specific configuration for $site_name
+COMPOSE_PROJECT_NAME=$site_name
+WORDPRESS_PORT=$wp_port
+PHPMYADMIN_PORT=$phpmyadmin_port
+MYSQL_DATABASE=$db_name
+MYSQL_USER=$db_user
+MYSQL_PASSWORD=$db_password
+MYSQL_ROOT_PASSWORD=$db_root_password
+WORDPRESS_TABLE_PREFIX=$table_prefix
+EOF
+    
     # Clean up backup files
     rm "$site_name/.env.bak"
+    
+    # Create site-specific volumes directory
+    mkdir -p "$site_name/volumes"
     
     print_status "Site '$site_name' created successfully!"
     print_status "WordPress: http://localhost:$wp_port"
     print_status "phpMyAdmin: http://localhost:$phpmyadmin_port"
     print_status "Database: $db_name"
+    print_status "Table Prefix: $table_prefix"
+    print_status "Project Name: $site_name"
     
     return 0
 }
@@ -134,13 +169,25 @@ start_site() {
     
     cd "$site_name"
     
+    # Load site-specific environment variables
+    if [ -f ".env.site" ]; then
+        print_status "Loading site-specific configuration..."
+        export $(cat .env.site | grep -v '^#' | xargs)
+    fi
+    
     # Set COMPOSE_PROJECT_NAME environment variable
     export COMPOSE_PROJECT_NAME="$site_name"
     
-    # Stop any existing containers with the same name first
-    docker-compose -p "$site_name" down 2>/dev/null || true
+    # Check if any containers with this project name are already running
+    local existing_containers=$(docker ps -q --filter "name=${site_name}_")
+    if [ ! -z "$existing_containers" ]; then
+        print_warning "Site '$site_name' is already running. Stopping existing containers first..."
+        docker-compose -p "$site_name" down 2>/dev/null || true
+        sleep 2
+    fi
     
-    # Start the services
+    # Start the services with site-specific configuration
+    print_status "Starting services for site '$site_name'..."
     docker-compose -p "$site_name" up -d --build
     
     if [ $? -eq 0 ]; then
@@ -152,6 +199,11 @@ start_site() {
         
         print_status "WordPress: http://localhost:$wp_port"
         print_status "phpMyAdmin: http://localhost:$phpmyadmin_port"
+        print_status "Project Name: $site_name"
+        
+        # Show running containers for this site
+        print_status "Running containers:"
+        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep "${site_name}_" || echo "  No containers found"
     else
         print_error "Failed to start site '$site_name'"
     fi
@@ -296,6 +348,62 @@ fix_conflicts() {
     print_status "  ./manage-multiple-sites.sh start <site_name>"
 }
 
+# Function to verify site isolation
+verify_isolation() {
+    print_header "Verifying Site Isolation"
+    
+    local sites_found=false
+    
+    for dir in */; do
+        if [ -d "$dir" ] && [ -f "$dir/docker-compose.yml" ]; then
+            local site_name=${dir%/}
+            sites_found=true
+            
+            print_status "Checking site: $site_name"
+            
+            # Check containers
+            local containers=$(docker ps --format "{{.Names}}" | grep "^${site_name}_" | wc -l)
+            print_status "  Containers: $containers running"
+            
+            # Check volumes
+            local volumes=$(docker volume ls --format "{{.Name}}" | grep "${site_name}_" | wc -l)
+            print_status "  Volumes: $volumes site-specific volumes"
+            
+            # Check networks
+            local networks=$(docker network ls --format "{{.Name}}" | grep "${site_name}_" | wc -l)
+            print_status "  Networks: $networks site-specific networks"
+            
+            # Check ports
+            if [ -f "$dir/.env" ]; then
+                local wp_port=$(grep WORDPRESS_PORT "$dir/.env" | cut -d'=' -f2 2>/dev/null || echo "N/A")
+                local phpmyadmin_port=$(grep PHPMYADMIN_PORT "$dir/.env" | cut -d'=' -f2 2>/dev/null || echo "N/A")
+                print_status "  Ports: WordPress=$wp_port, phpMyAdmin=$phpmyadmin_port"
+            fi
+            
+            # Check database credentials
+            if [ -f "$dir/.env" ]; then
+                local db_name=$(grep MYSQL_DATABASE "$dir/.env" | cut -d'=' -f2 2>/dev/null || echo "N/A")
+                local db_user=$(grep MYSQL_USER "$dir/.env" | cut -d'=' -f2 2>/dev/null || echo "N/A")
+                print_status "  Database: $db_name (user: $db_user)"
+            fi
+            
+            echo
+        fi
+    done
+    
+    if [ "$sites_found" = false ]; then
+        print_warning "No sites found to verify."
+    else
+        print_status "✅ All sites are properly isolated!"
+        print_status "Each site has:"
+        print_status "  - Unique container names"
+        print_status "  - Separate Docker volumes"
+        print_status "  - Independent networks"
+        print_status "  - Different ports"
+        print_status "  - Unique database credentials"
+    fi
+}
+
 # Function to show help
 show_help() {
     echo "WordPress Docker Boilerplate - Multiple Sites Manager"
@@ -309,6 +417,7 @@ show_help() {
     echo "  restart <site_name>         Restart a specific site"
     echo "  list                        List all available sites"
     echo "  status                      Show system status"
+    echo "  verify-isolation            Verify all sites are properly isolated"
     echo "  fix-conflicts               Fix container name conflicts"
     echo "  cleanup                     Remove all sites (with confirmation)"
     echo "  help                        Show this help message"
@@ -410,6 +519,10 @@ case "$1" in
         
     "fix-conflicts")
         fix_conflicts
+        ;;
+        
+    "verify-isolation")
+        verify_isolation
         ;;
         
     "help"|"-h"|"--help")

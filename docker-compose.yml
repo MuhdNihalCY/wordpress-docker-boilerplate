@@ -86,11 +86,14 @@ services:
 volumes:
   wordpress_data:
     driver: local
+    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_wordpress_data
   mysql_data:
     driver: local
+    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_mysql_data
 
 networks:
   wordpress-network:
     driver: bridge
+    name: ${COMPOSE_PROJECT_NAME:-wp-boilerplate}_wordpress-network
 
 
