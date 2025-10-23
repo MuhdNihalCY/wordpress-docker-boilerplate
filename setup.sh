@@ -7,10 +7,12 @@ set -e
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 log() { echo -e "${GREEN}[INFO]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 log "Setting up WordPress Docker environment..."
 
@@ -114,9 +116,59 @@ export PHPMYADMIN_PORT=$phpmyadmin_port
 log "Starting WordPress services..."
 docker-compose up -d
 
-# Wait for services to be ready
-log "Waiting for services to start..."
-sleep 10
+# Wait for MySQL to be fully ready
+log "Waiting for MySQL to initialize..."
+wait_for_mysql() {
+    local max_attempts=30
+    local attempt=1
+    local mysql_root_password=$(grep MYSQL_ROOT_PASSWORD .env | cut -d'=' -f2 2>/dev/null || echo "change_this_root_password")
+    
+    while [ $attempt -le $max_attempts ]; do
+        if docker-compose exec -T mysql mysqladmin ping -h localhost -u root -p"$mysql_root_password" --silent 2>/dev/null; then
+            log "✅ MySQL is ready!"
+            return 0
+        fi
+        
+        log "MySQL not ready yet (attempt $attempt/$max_attempts)..."
+        sleep 2
+        ((attempt++))
+    done
+    
+    error "MySQL failed to start after $max_attempts attempts"
+    return 1
+}
+
+# Wait for MySQL
+if ! wait_for_mysql; then
+    error "Failed to start MySQL. Check logs: docker-compose logs mysql"
+    exit 1
+fi
+
+# Wait for WordPress to connect to database
+log "Waiting for WordPress to connect to database..."
+wait_for_wordpress_db() {
+    local max_attempts=20
+    local attempt=1
+    local mysql_user=$(grep MYSQL_USER .env | cut -d'=' -f2 2>/dev/null || echo "wordpress_user")
+    local mysql_password=$(grep MYSQL_PASSWORD .env | cut -d'=' -f2 2>/dev/null || echo "change_this_password")
+    local mysql_database=$(grep MYSQL_DATABASE .env | cut -d'=' -f2 2>/dev/null || echo "wordpress_db")
+    
+    while [ $attempt -le $max_attempts ]; do
+        if docker-compose exec -T mysql mysql -u "$mysql_user" -p"$mysql_password" -e "USE $mysql_database;" 2>/dev/null; then
+            log "✅ WordPress database connection successful!"
+            return 0
+        fi
+        
+        log "WordPress database not ready yet (attempt $attempt/$max_attempts)..."
+        sleep 3
+        ((attempt++))
+    done
+    
+    warn "WordPress database connection may still be initializing..."
+    return 1
+}
+
+wait_for_wordpress_db
 
 # Verify services are running
 if docker-compose ps | grep -q "Up"; then
@@ -124,6 +176,26 @@ if docker-compose ps | grep -q "Up"; then
     log "WordPress: http://localhost:$wp_port"
     log "phpMyAdmin: http://localhost:$phpmyadmin_port"
     log "Admin: http://localhost:$wp_port/wp-admin"
+    log ""
+    
+    # Check if WordPress is accessible
+    log "Checking WordPress accessibility..."
+    local wp_response=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$wp_port")
+    if echo "$wp_response" | grep -q "200\|302"; then
+        log "✅ WordPress is accessible! (HTTP $wp_response)"
+    else
+        warn "⚠️  WordPress may still be initializing... (HTTP $wp_response)"
+        log "   If you see database connection errors, wait 30-60 seconds"
+        log "   for WordPress to complete its setup process."
+        log "   You can check logs with: docker-compose logs wordpress"
+    fi
+    
+    log ""
+    log "🔧 Troubleshooting:"
+    log "   - Database errors: docker-compose logs mysql"
+    log "   - WordPress errors: docker-compose logs wordpress"
+    log "   - All logs: docker-compose logs"
+    log ""
     log "Setup complete!"
 else
     error "Failed to start services. Check logs: docker-compose logs"
