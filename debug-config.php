@@ -2,11 +2,19 @@
 /**
  * WordPress Debug Configuration
  * Simple debug setup with custom write_log() function
+ * 
+ * This file is automatically loaded by WordPress via docker-compose.yml
+ * Mount: ./debug-config.php:/var/www/html/debug-config.php
  */
 
 // Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+// Auto-load this file in wp-config.php
+if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
+	require_once ABSPATH . 'debug-config.php';
 }
 
 // Only load if debug is enabled

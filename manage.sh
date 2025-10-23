@@ -42,11 +42,17 @@ create_site() {
     cd "$site_name"
     cp environment.env .env
     
+    # Generate unique passwords
+    local db_password=$(openssl rand -hex 8)
+    local root_password=$(openssl rand -hex 8)
+    
     # Update ports and database
     sed -i.bak "s/WORDPRESS_PORT=8080/WORDPRESS_PORT=$port/" .env
     sed -i.bak "s/PHPMYADMIN_PORT=8081/PHPMYADMIN_PORT/$((port+1))/" .env
     sed -i.bak "s/MYSQL_DATABASE=wordpress_db/MYSQL_DATABASE=wp_${site_name}_db/" .env
     sed -i.bak "s/MYSQL_USER=wordpress_user/MYSQL_USER=wp_${site_name}_user/" .env
+    sed -i.bak "s/MYSQL_PASSWORD=change_this_password/MYSQL_PASSWORD=$db_password/" .env
+    sed -i.bak "s/MYSQL_ROOT_PASSWORD=change_this_root_password/MYSQL_ROOT_PASSWORD=$root_password/" .env
     
     rm .env.bak
     cd ..
@@ -86,6 +92,34 @@ stop_site() {
     docker-compose -p "$site_name" down
     cd ..
     log "Site '$site_name' stopped"
+}
+
+# Clean up a site
+cleanup_site() {
+    local site_name=$1
+    
+    if [ ! -d "$site_name" ]; then
+        error "Site '$site_name' not found"
+        return 1
+    fi
+    
+    log "Cleaning up site: $site_name"
+    
+    # Stop and remove containers
+    cd "$site_name"
+    export COMPOSE_PROJECT_NAME="$site_name"
+    docker-compose -p "$site_name" down -v 2>/dev/null || true
+    
+    # Remove volumes
+    docker volume rm "${site_name}_wordpress_data" 2>/dev/null || true
+    docker volume rm "${site_name}_mysql_data" 2>/dev/null || true
+    
+    cd ..
+    
+    # Remove directory
+    rm -rf "$site_name"
+    
+    log "Site '$site_name' cleaned up completely"
 }
 
 # List all sites
@@ -147,14 +181,23 @@ case "$1" in
         list_sites
         ;;
         
+    "cleanup")
+        if [ -z "$2" ]; then
+            error "Usage: $0 cleanup <site_name>"
+            exit 1
+        fi
+        cleanup_site "$2"
+        ;;
+        
     *)
         echo "WordPress Multi-Site Manager"
-        echo "Usage: $0 [create|start|stop|list] [site_name]"
+        echo "Usage: $0 [create|start|stop|list|cleanup] [site_name]"
         echo ""
         echo "Commands:"
-        echo "  create <name>  Create a new site"
-        echo "  start <name>   Start a site"
-        echo "  stop <name>    Stop a site"
-        echo "  list           List all sites"
+        echo "  create <name>   Create a new site"
+        echo "  start <name>    Start a site"
+        echo "  stop <name>     Stop a site"
+        echo "  cleanup <name>  Remove a site completely"
+        echo "  list            List all sites"
         ;;
 esac

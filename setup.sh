@@ -32,13 +32,28 @@ if [ ! -f .env ]; then
     log "Please edit .env file with your settings"
 fi
 
+# Check port availability
+if lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null 2>&1; then
+    error "Port 8080 is already in use. Please change WORDPRESS_PORT in .env"
+    exit 1
+fi
+
 # Start services
 log "Starting WordPress services..."
 docker-compose up -d
 
-log "WordPress is starting up..."
-log "WordPress: http://localhost:8080"
-log "phpMyAdmin: http://localhost:8081"
-log "Admin: http://localhost:8080/wp-admin"
+# Wait for services to be ready
+log "Waiting for services to start..."
+sleep 10
 
-log "Setup complete!"
+# Verify services are running
+if docker-compose ps | grep -q "Up"; then
+    log "✅ Services started successfully!"
+    log "WordPress: http://localhost:8080"
+    log "phpMyAdmin: http://localhost:8081"
+    log "Admin: http://localhost:8080/wp-admin"
+    log "Setup complete!"
+else
+    error "Failed to start services. Check logs: docker-compose logs"
+    exit 1
+fi

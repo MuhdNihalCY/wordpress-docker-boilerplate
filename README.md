@@ -24,6 +24,7 @@ open http://localhost:8080
 # Manage sites
 ./manage.sh start site1
 ./manage.sh stop site1
+./manage.sh cleanup site1  # Remove site completely
 ./manage.sh list
 ```
 
@@ -94,6 +95,7 @@ docker-compose logs           # View logs
 ./manage.sh create newsite    # Create site
 ./manage.sh start newsite     # Start site
 ./manage.sh stop newsite      # Stop site
+./manage.sh cleanup newsite   # Remove site completely
 ./manage.sh list             # List sites
 ```
 
