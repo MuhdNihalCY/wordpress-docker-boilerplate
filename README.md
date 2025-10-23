@@ -57,6 +57,7 @@ wordpress-docker-boilerplate/
 ├── debug-config.php               # WordPress debug configuration
 ├── DEBUG-LOGGING-GUIDE.md         # Comprehensive debug logging guide
 ├── setup.sh                       # Automated setup script
+├── manage-multiple-sites.sh       # Multi-site management script
 ├── .gitignore                     # Git ignore file
 ├── LICENSE                        # MIT License
 ├── CONTRIBUTING.md                # Contribution guidelines
@@ -181,6 +182,247 @@ write_log('Function called', 'debug');
 - Use the admin interface to monitor logs
 
 For detailed debug logging documentation, see: `DEBUG-LOGGING-GUIDE.md`
+
+## 🔀 Running Multiple Sites
+
+You can easily run multiple WordPress sites on the same system using different approaches:
+
+### **Method 1: Automated Management Script (Recommended)**
+
+Use the included management script for easy multi-site setup:
+
+```bash
+# Create a single site
+./manage-multiple-sites.sh create mysite
+
+# Create multiple sites at once
+./manage-multiple-sites.sh create mysite 3  # Creates mysite1, mysite2, mysite3
+
+# List all sites
+./manage-multiple-sites.sh list
+
+# Start a specific site
+./manage-multiple-sites.sh start mysite1
+
+# Stop a specific site
+./manage-multiple-sites.sh stop mysite1
+
+# Check system status
+./manage-multiple-sites.sh status
+
+# Get help
+./manage-multiple-sites.sh help
+```
+
+### **Method 2: Manual Setup (Different Ports)**
+
+1. **Clone the boilerplate multiple times:**
+   ```bash
+   # Site 1
+   git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git site1
+   cd site1
+   cp environment.env .env
+   # Edit .env: WORDPRESS_PORT=8080, PHPMYADMIN_PORT=8081
+   docker-compose up -d
+   
+   # Site 2
+   git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git site2
+   cd site2
+   cp environment.env .env
+   # Edit .env: WORDPRESS_PORT=8082, PHPMYADMIN_PORT=8083
+   docker-compose up -d
+   
+   # Site 3
+   git clone https://github.com/MuhdNihalCY/wordpress-docker-boilerplate.git site3
+   cd site3
+   cp environment.env .env
+   # Edit .env: WORDPRESS_PORT=8084, PHPMYADMIN_PORT=8085
+   docker-compose up -d
+   ```
+
+2. **Access your sites:**
+   - Site 1: http://localhost:8080 (phpMyAdmin: 8081)
+   - Site 2: http://localhost:8082 (phpMyAdmin: 8083)
+   - Site 3: http://localhost:8084 (phpMyAdmin: 8085)
+
+### **Method 3: Different Project Names**
+
+1. **Use Docker Compose project names:**
+   ```bash
+   # Site 1
+   cd site1
+   docker-compose -p site1 up -d
+   
+   # Site 2
+   cd site2
+   docker-compose -p site2 up -d
+   
+   # Site 3
+   cd site3
+   docker-compose -p site3 up -d
+   ```
+
+2. **Check running containers:**
+   ```bash
+   docker ps
+   # You'll see containers like: site1_wordpress, site2_wordpress, etc.
+   ```
+
+### **Method 4: Subdomain Setup (Production)**
+
+1. **Configure Nginx reverse proxy:**
+   ```nginx
+   # /etc/nginx/sites-available/multi-wordpress
+   server {
+       listen 80;
+       server_name site1.yourdomain.com;
+       location / {
+           proxy_pass http://localhost:8080;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   
+   server {
+       listen 80;
+       server_name site2.yourdomain.com;
+       location / {
+           proxy_pass http://localhost:8082;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   ```
+
+2. **Update DNS records:**
+   - site1.yourdomain.com → your-server-ip
+   - site2.yourdomain.com → your-server-ip
+
+### **Method 5: Single Docker Compose with Multiple Services**
+
+Create a `docker-compose.multi.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  wordpress1:
+    image: wordpress:6.4-php8.2-apache
+    container_name: wp-site1
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql1:3306
+      WORDPRESS_DB_USER: wp1_user
+      WORDPRESS_DB_PASSWORD: wp1_password
+      WORDPRESS_DB_NAME: wp1_db
+    volumes:
+      - wp1_data:/var/www/html
+    depends_on:
+      - mysql1
+
+  mysql1:
+    image: mysql:8.0
+    container_name: wp-mysql1
+    environment:
+      MYSQL_DATABASE: wp1_db
+      MYSQL_USER: wp1_user
+      MYSQL_PASSWORD: wp1_password
+      MYSQL_ROOT_PASSWORD: wp1_root_password
+    volumes:
+      - wp1_mysql_data:/var/lib/mysql
+
+  wordpress2:
+    image: wordpress:6.4-php8.2-apache
+    container_name: wp-site2
+    ports:
+      - "8082:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql2:3306
+      WORDPRESS_DB_USER: wp2_user
+      WORDPRESS_DB_PASSWORD: wp2_password
+      WORDPRESS_DB_NAME: wp2_db
+    volumes:
+      - wp2_data:/var/www/html
+    depends_on:
+      - mysql2
+
+  mysql2:
+    image: mysql:8.0
+    container_name: wp-mysql2
+    environment:
+      MYSQL_DATABASE: wp2_db
+      MYSQL_USER: wp2_user
+      MYSQL_PASSWORD: wp2_password
+      MYSQL_ROOT_PASSWORD: wp2_root_password
+    volumes:
+      - wp2_mysql_data:/var/lib/mysql
+
+volumes:
+  wp1_data:
+  wp1_mysql_data:
+  wp2_data:
+  wp2_mysql_data:
+```
+
+### **Port Configuration Reference**
+
+| Site | WordPress Port | phpMyAdmin Port | Database Port |
+|------|---------------|-----------------|---------------|
+| Site 1 | 8080 | 8081 | 3306 (internal) |
+| Site 2 | 8082 | 8083 | 3307 (internal) |
+| Site 3 | 8084 | 8085 | 3308 (internal) |
+| Site 4 | 8086 | 8087 | 3309 (internal) |
+
+### **Management Commands for Multiple Sites**
+
+```bash
+# Start all sites
+docker-compose -p site1 up -d
+docker-compose -p site2 up -d
+docker-compose -p site3 up -d
+
+# Stop specific site
+docker-compose -p site1 down
+
+# View logs for specific site
+docker-compose -p site1 logs wordpress
+
+# Restart specific site
+docker-compose -p site1 restart wordpress
+
+# Check all running containers
+docker ps --format "table {{.Names}}\t{{.Ports}}\t{{.Status}}"
+
+# Backup specific site database
+docker-compose -p site1 exec mysql mysqldump -u root -p wp1_db > site1_backup.sql
+```
+
+### **Resource Management**
+
+```bash
+# Check resource usage
+docker stats
+
+# Set resource limits in docker-compose.yml
+services:
+  wordpress:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+```
+
+### **Best Practices for Multiple Sites**
+
+1. **Use descriptive project names** (`-p site1`, `-p site2`)
+2. **Different ports** for each site
+3. **Separate databases** for each site
+4. **Individual .env files** for each site
+5. **Resource monitoring** to prevent conflicts
+6. **Regular backups** for each site
+7. **SSL certificates** for production sites
 
 ## 🏗️ Boilerplate Standards
 
